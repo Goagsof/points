@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <title>Conteo de Puntos - Modeling & PTS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet: 20px; }
+    .section-title { margin-top: 30px; font-weight: bold; font-size: 1.2em; }
+    .points-display { font-size: 1.5em; font-weight: bold; margin-top: 20px; }
+    .btn-group { flex-wrap: wrap; }
+    .btn { margin: 5px; }
+  </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contador de Puntos - Modeling y PTS</title>
@@ -93,92 +101,6 @@
         
         .pts-btn:hover {
             background-color: #c0392b;
-        }
-        
-        .quality-section {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .quality-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .quality-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .add-case-btn {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .add-case-btn:hover {
-            background-color: #27ae60;
-        }
-        
-        .rework-btn {
-            background-color: #e67e22;
-            color: white;
-        }
-        
-        .rework-btn:hover {
-            background-color: #d35400;
-        }
-        
-        .quality-display {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .quality-item {
-            text-align: center;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #f8f9fa;
-            min-width: 150px;
-        }
-        
-        .quality-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-        
-        .quality-label {
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        .quality-percentage {
-            color: #2c3e50;
-        }
-        
-        .good-quality {
-            color: #27ae60;
-        }
-        
-        .medium-quality {
-            color: #f39c12;
-        }
-        
-        .poor-quality {
-            color: #e74c3c;
         }
         
         .summary {
@@ -319,17 +241,19 @@
                 flex-direction: column;
             }
             
-            .quality-controls, .controls {
+            .controls {
                 flex-direction: column;
             }
             
-            .quality-btn, .control-btn {
+            .control-btn {
                 width: 100%;
             }
         }
     </style>
 </head>
 <body>
+  <div class="container">
+    <h1 class="text-center mb-4">Sistema de Conteo de Puntos</h1>
     <div class="container">
         <header>
             <h1>Contador de Puntos - Modeling y PTS</h1>
@@ -348,29 +272,6 @@
                 <h2 class="section-title">PTS</h2>
                 <div class="button-grid" id="pts-buttons">
                     <!-- Los botones se generarán con JavaScript -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="quality-section">
-            <h2 class="section-title">Control de Calidad</h2>
-            <div class="quality-controls">
-                <button class="quality-btn add-case-btn" id="add-case-btn">Agregar Caso Enviado</button>
-                <button class="quality-btn rework-btn" id="rework-btn">Agregar Rework</button>
-            </div>
-            
-            <div class="quality-display">
-                <div class="quality-item">
-                    <div class="quality-value" id="cases-sent">0</div>
-                    <div class="quality-label">Casos Enviados</div>
-                </div>
-                <div class="quality-item">
-                    <div class="quality-value" id="cases-rework">0</div>
-                    <div class="quality-label">Casos con Rework</div>
-                </div>
-                <div class="quality-item">
-                    <div class="quality-value quality-percentage" id="quality-percentage">0%</div>
-                    <div class="quality-label">Porcentaje de Calidad</div>
                 </div>
             </div>
         </div>
@@ -407,6 +308,9 @@
         </div>
     </div>
 
+    <!-- Sección Modeling -->
+    <div class="section-title">Modeling</div>
+    <div id="modeling-buttons" class="btn-group d-flex"></div>
     <script>
         // Datos de las operaciones
         const operations = [
@@ -426,19 +330,23 @@
             { type: "PTS", description: "Unbonded Suppl", points: 0.164 }
         ];
 
+    <!-- Sección PTS -->
+    <div class="section-title">PTS</div>
+    <div id="pts-buttons" class="btn-group d-flex"></div>
         // Estado de la aplicación
         let state = {
             history: [],
             modelingTotal: 0,
             ptsTotal: 0,
-            grandTotal: 0,
-            quality: {
-                casesSent: 0,
-                casesRework: 0,
-                qualityPercentage: 0
-            }
+            grandTotal: 0
         };
 
+    <!-- Total de puntos -->
+    <div class="points-display">
+      Total de puntos: <span id="total-points">0</span>
+    </div>
+    <button id="reset-btn" class="btn btn-danger mt-3">Reiniciar</button>
+  </div>
         // Elementos del DOM
         const modelingButtonsContainer = document.getElementById('modeling-buttons');
         const ptsButtonsContainer = document.getElementById('pts-buttons');
@@ -449,12 +357,9 @@
         const undoButton = document.getElementById('undo-btn');
         const printButton = document.getElementById('print-btn');
         const resetButton = document.getElementById('reset-btn');
-        const addCaseButton = document.getElementById('add-case-btn');
-        const reworkButton = document.getElementById('rework-btn');
-        const casesSentElement = document.getElementById('cases-sent');
-        const casesReworkElement = document.getElementById('cases-rework');
-        const qualityPercentageElement = document.getElementById('quality-percentage');
 
+  <!-- jQuery -->
+  https://code.jquery.com/jquery-3.7.0.min.js
         // Inicializar la aplicación
         function init() {
             loadState();
@@ -465,10 +370,22 @@
             undoButton.addEventListener('click', undoLastOperation);
             printButton.addEventListener('click', printToPDF);
             resetButton.addEventListener('click', resetApplication);
-            addCaseButton.addEventListener('click', addCase);
-            reworkButton.addEventListener('click', addRework);
         }
 
+  <!-- JavaScript que hace los cálculos -->
+  <script>
+    $(document).ready(function () {
+      // Operaciones Modeling
+      const modelingOps = {
+        "Diagnosticos": 0.15,
+        "Unbonded": 0.25,
+        "Retainers SA": 0.25,
+        "Therapeutic": 0.333,
+        "CT's": 0.3,
+        "CT's Suppl": 0.417,
+        "CT's Diag": 0.208,
+        "CT's Diag Suppl": 0.244
+      };
         // Cargar estado desde localStorage
         function loadState() {
             const savedState = localStorage.getItem('pointsCounterState');
@@ -477,11 +394,17 @@
             }
         }
 
+      // Operaciones PTS (descartando las que no aplican)
+      const ptsOps = {
+        "Diagnosticos": 0.083,
+        "Retainers SA": 0.12
+      };
         // Guardar estado en localStorage
         function saveState() {
             localStorage.setItem('pointsCounterState', JSON.stringify(state));
         }
 
+      let totalPoints = 0;
         // Renderizar botones
         function renderButtons() {
             // Limpiar contenedores
@@ -511,6 +434,10 @@
                 });
         }
 
+      // Mostrar puntos en pantalla
+      function updateDisplay() {
+        $('#total-points').text(totalPoints.toFixed(3));
+      }
         // Agregar una operación
         function addOperation(operation) {
             state.history.push(operation);
@@ -527,38 +454,18 @@
             updateUI();
         }
 
-        // Agregar un caso enviado
-        function addCase() {
-            state.quality.casesSent++;
-            calculateQuality();
-            saveState();
-            updateUI();
+      // Crear botones dinámicamente
+      function createButtons(containerId, operations) {
+        for (const [name, value] of Object.entries(operations)) {
+          const btn = $(`<button class="btn btn-primary">${name} (${value})</button>`);
+          btn.click(() => {
+            totalPoints += value;
+            sessionStorage.setItem('points', totalPoints);
+            updateDisplay();
+          });
+          $(containerId).append(btn);
         }
-
-        // Agregar un rework
-        function addRework() {
-            if (state.quality.casesSent === 0) {
-                alert("No hay casos enviados para marcar como rework. Agrega primero un caso enviado.");
-                return;
-            }
-            
-            state.quality.casesRework++;
-            calculateQuality();
-            saveState();
-            updateUI();
-        }
-
-        // Calcular calidad
-        function calculateQuality() {
-            if (state.quality.casesSent === 0) {
-                state.quality.qualityPercentage = 0;
-            } else {
-                // Calcular el porcentaje de calidad: (casos enviados - casos con rework) / casos enviados * 100
-                const approvedCases = state.quality.casesSent - state.quality.casesRework;
-                state.quality.qualityPercentage = (approvedCases / state.quality.casesSent) * 100;
-            }
-        }
-
+      }
         // Deshacer última operación
         function undoLastOperation() {
             if (state.history.length === 0) return;
@@ -577,6 +484,12 @@
             updateUI();
         }
 
+      // Reiniciar puntos
+      function resetPoints() {
+        totalPoints = 0;
+        sessionStorage.removeItem('points');
+        updateDisplay();
+      }
         // Reiniciar aplicación
         function resetApplication() {
             if (confirm("¿Estás seguro de que quieres reiniciar el contador? Se perderán todos los datos.")) {
@@ -584,12 +497,7 @@
                     history: [],
                     modelingTotal: 0,
                     ptsTotal: 0,
-                    grandTotal: 0,
-                    quality: {
-                        casesSent: 0,
-                        casesRework: 0,
-                        qualityPercentage: 0
-                    }
+                    grandTotal: 0
                 };
                 
                 saveState();
@@ -597,31 +505,26 @@
             }
         }
 
+      // Inicializar botones
+      createButtons('#modeling-buttons', modelingOps);
+      createButtons('#pts-buttons', ptsOps);
         // Imprimir a PDF
         function printToPDF() {
             window.print();
         }
 
+      // Restaurar puntos si hay sesión activa
+      const storedPoints = sessionStorage.getItem('points');
+      if (storedPoints) {
+        totalPoints = parseFloat(storedPoints);
+        updateDisplay();
+      }
         // Actualizar la interfaz de usuario
         function updateUI() {
             // Actualizar totales
             modelingTotalElement.textContent = state.modelingTotal.toFixed(3);
             ptsTotalElement.textContent = state.ptsTotal.toFixed(3);
             grandTotalElement.textContent = state.grandTotal.toFixed(3);
-            
-            // Actualizar calidad
-            casesSentElement.textContent = state.quality.casesSent;
-            casesReworkElement.textContent = state.quality.casesRework;
-            qualityPercentageElement.textContent = `${state.quality.qualityPercentage.toFixed(1)}%`;
-            
-            // Aplicar color según la calidad
-            if (state.quality.qualityPercentage >= 90) {
-                qualityPercentageElement.className = "quality-value quality-percentage good-quality";
-            } else if (state.quality.qualityPercentage >= 70) {
-                qualityPercentageElement.className = "quality-value quality-percentage medium-quality";
-            } else {
-                qualityPercentageElement.className = "quality-value quality-percentage poor-quality";
-            }
             
             // Actualizar historial
             historyListElement.innerHTML = '';
@@ -650,11 +553,12 @@
             
             // Deshabilitar botón de deshacer si no hay historial
             undoButton.disabled = state.history.length === 0;
-            
-            // Deshabilitar botón de rework si no hay casos enviados
-            reworkButton.disabled = state.quality.casesSent === 0;
         }
 
+      // Botón de reinicio
+      $('#reset-btn').click(resetPoints);
+    });
+  </script>
         // Inicializar la aplicación cuando se carga la página
         document.addEventListener('DOMContentLoaded', init);
     </script>

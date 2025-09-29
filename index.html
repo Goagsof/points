@@ -2,31 +2,87 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Conteo de Puntos</title>
-  https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
-  <style>
-    body { padding: 20px; }
-    .section-title { margin-top: 30px; }
-    .points-display { font-size: 1.5em; font-weight: bold; }
+  <title>Conteo de Puntos - Modeling & PTS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet: 20px; }
+    .section-title { margin-top: 30px; font-weight: bold; font-size: 1.2em; }
+    .points-display { font-size: 1.5em; font-weight: bold; margin-top: 20px; }
+    .btn-group { flex-wrap: wrap; }
+    .btn { margin: 5px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="text-center">Sistema de Conteo de Puntos</h1>
+    <h1 class="text-center mb-4">Sistema de Conteo de Puntos</h1>
 
     <div class="section-title">Modeling</div>
-    <div id="modeling-buttons" class="btn-group d-flex flex-wrap"></div>
+    <div id="modeling-buttons" class="btn-group d-flex"></div>
 
     <div class="section-title">PTS</div>
-    <div id="pts-buttons" class="btn-group d-flex flex-wrap"></div>
+    <div id="pts-buttons" class="btn-group d-flex"></div>
 
-    <div class="mt-4">
-      <p class="points-display">Total de puntos: <span id="total-points">0</span></p>
-      <button id="reset-btn" class="btn btn-danger">Reiniciar</button>
+    <div class="points-display">
+      Total de puntos: <span id="total-points">0</span>
     </div>
+    <button id="reset-btn" class="btn btn-danger mt-3">Reiniciar</button>
   </div>
 
-  https://code.jquery.com/jquery-3.7.0.min.js</script>
-  script.js</script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.jsscript>
+    $(document).ready(function () {
+      const modelingOps = {
+        "Diagnosticos": 0.15,
+        "Unbonded": 0.25,
+        "Retainers SA": 0.25,
+        "Therapeutic": 0.333,
+        "CT's": 0.3,
+        "CT's Suppl": 0.417,
+        "CT's Diag": 0.208,
+        "CT's Diag Suppl": 0.244
+      };
+
+      const ptsOps = {
+        "Diagnosticos": 0.083,
+        "Retainers SA": 0.12
+        // Se descartan: Unbonded, Therapeutic, CT's / Suppl, Unbonded Suppl
+      };
+
+      let totalPoints = 0;
+
+      function updateDisplay() {
+        $('#total-points').text(totalPoints.toFixed(3));
+      }
+
+      function createButtons(containerId, operations) {
+        for (const [name, value] of Object.entries(operations)) {
+          const btn = $(`<button class="btn btn-primary">${name} (${value})</button>`);
+          btn.click(() => {
+            totalPoints += value;
+            sessionStorage.setItem('points', totalPoints);
+            updateDisplay();
+          });
+          $(containerId).append(btn);
+        }
+      }
+
+      function resetPoints() {
+        totalPoints = 0;
+        sessionStorage.removeItem('points');
+        updateDisplay();
+      }
+
+      // Crear botones
+      createButtons('#modeling-buttons', modelingOps);
+      createButtons('#pts-buttons', ptsOps);
+
+      // Restaurar puntos si hay sesión activa
+      const storedPoints = sessionStorage.getItem('points');
+      if (storedPoints) {
+        totalPoints = parseFloat(storedPoints);
+        updateDisplay();
+      }
+
+      $('#reset-btn').click(resetPoints);
+    });
+  </script>
 </body>
 </html>
+

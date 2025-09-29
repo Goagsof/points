@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Conteo de Puntos - Modeling & PTS</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet: 20px; }
-    .section-title { margin-top: 30px; font-weight: bold; font-size: 1.2em; }
-    .points-display { font-size: 1.5em; font-weight: bold; margin-top: 20px; }
-    .btn-group { flex-wrap: wrap; }
-    .btn { margin: 5px; }
-  </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contador de Puntos - Modeling y PTS</title>
@@ -252,8 +244,6 @@
     </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="text-center mb-4">Sistema de Conteo de Puntos</h1>
     <div class="container">
         <header>
             <h1>Contador de Puntos - Modeling y PTS</h1>
@@ -308,9 +298,6 @@
         </div>
     </div>
 
-    <!-- Sección Modeling -->
-    <div class="section-title">Modeling</div>
-    <div id="modeling-buttons" class="btn-group d-flex"></div>
     <script>
         // Datos de las operaciones
         const operations = [
@@ -330,9 +317,6 @@
             { type: "PTS", description: "Unbonded Suppl", points: 0.164 }
         ];
 
-    <!-- Sección PTS -->
-    <div class="section-title">PTS</div>
-    <div id="pts-buttons" class="btn-group d-flex"></div>
         // Estado de la aplicación
         let state = {
             history: [],
@@ -341,12 +325,6 @@
             grandTotal: 0
         };
 
-    <!-- Total de puntos -->
-    <div class="points-display">
-      Total de puntos: <span id="total-points">0</span>
-    </div>
-    <button id="reset-btn" class="btn btn-danger mt-3">Reiniciar</button>
-  </div>
         // Elementos del DOM
         const modelingButtonsContainer = document.getElementById('modeling-buttons');
         const ptsButtonsContainer = document.getElementById('pts-buttons');
@@ -358,8 +336,6 @@
         const printButton = document.getElementById('print-btn');
         const resetButton = document.getElementById('reset-btn');
 
-  <!-- jQuery -->
-  https://code.jquery.com/jquery-3.7.0.min.js
         // Inicializar la aplicación
         function init() {
             loadState();
@@ -372,20 +348,6 @@
             resetButton.addEventListener('click', resetApplication);
         }
 
-  <!-- JavaScript que hace los cálculos -->
-  <script>
-    $(document).ready(function () {
-      // Operaciones Modeling
-      const modelingOps = {
-        "Diagnosticos": 0.15,
-        "Unbonded": 0.25,
-        "Retainers SA": 0.25,
-        "Therapeutic": 0.333,
-        "CT's": 0.3,
-        "CT's Suppl": 0.417,
-        "CT's Diag": 0.208,
-        "CT's Diag Suppl": 0.244
-      };
         // Cargar estado desde localStorage
         function loadState() {
             const savedState = localStorage.getItem('pointsCounterState');
@@ -394,17 +356,11 @@
             }
         }
 
-      // Operaciones PTS (descartando las que no aplican)
-      const ptsOps = {
-        "Diagnosticos": 0.083,
-        "Retainers SA": 0.12
-      };
         // Guardar estado en localStorage
         function saveState() {
             localStorage.setItem('pointsCounterState', JSON.stringify(state));
         }
 
-      let totalPoints = 0;
         // Renderizar botones
         function renderButtons() {
             // Limpiar contenedores
@@ -434,10 +390,6 @@
                 });
         }
 
-      // Mostrar puntos en pantalla
-      function updateDisplay() {
-        $('#total-points').text(totalPoints.toFixed(3));
-      }
         // Agregar una operación
         function addOperation(operation) {
             state.history.push(operation);
@@ -454,18 +406,6 @@
             updateUI();
         }
 
-      // Crear botones dinámicamente
-      function createButtons(containerId, operations) {
-        for (const [name, value] of Object.entries(operations)) {
-          const btn = $(`<button class="btn btn-primary">${name} (${value})</button>`);
-          btn.click(() => {
-            totalPoints += value;
-            sessionStorage.setItem('points', totalPoints);
-            updateDisplay();
-          });
-          $(containerId).append(btn);
-        }
-      }
         // Deshacer última operación
         function undoLastOperation() {
             if (state.history.length === 0) return;
@@ -484,12 +424,6 @@
             updateUI();
         }
 
-      // Reiniciar puntos
-      function resetPoints() {
-        totalPoints = 0;
-        sessionStorage.removeItem('points');
-        updateDisplay();
-      }
         // Reiniciar aplicación
         function resetApplication() {
             if (confirm("¿Estás seguro de que quieres reiniciar el contador? Se perderán todos los datos.")) {
@@ -505,20 +439,11 @@
             }
         }
 
-      // Inicializar botones
-      createButtons('#modeling-buttons', modelingOps);
-      createButtons('#pts-buttons', ptsOps);
         // Imprimir a PDF
         function printToPDF() {
             window.print();
         }
 
-      // Restaurar puntos si hay sesión activa
-      const storedPoints = sessionStorage.getItem('points');
-      if (storedPoints) {
-        totalPoints = parseFloat(storedPoints);
-        updateDisplay();
-      }
         // Actualizar la interfaz de usuario
         function updateUI() {
             // Actualizar totales
@@ -555,10 +480,6 @@
             undoButton.disabled = state.history.length === 0;
         }
 
-      // Botón de reinicio
-      $('#reset-btn').click(resetPoints);
-    });
-  </script>
         // Inicializar la aplicación cuando se carga la página
         document.addEventListener('DOMContentLoaded', init);
     </script>

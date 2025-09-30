@@ -24,10 +24,29 @@
         }
         
         header {
-            text-align: center;
+            position: relative;
             margin-bottom: 30px;
             padding-bottom: 15px;
             border-bottom: 2px solid #3498db;
+            text-align: center;
+        }
+
+        .header-content {
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo {
+            position: absolute;
+            left: -105%;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60px;
+            width: auto;
+            transition: all 0.3s ease;
+        }     
+        .header-text {
+            text-align: center;
         }
         
         h1 {
@@ -135,6 +154,38 @@
             margin-top: 5px;
         }
         
+        .quality-display {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .quality-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            min-width: 200px;
+        }
+        
+        .quality-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .quality-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .good-quality {
+            color: #27ae60;
+        }
+        
+        .poor-quality {
+            color: #e74c3c;
+        }
+        
         .history {
             background: white;
             border-radius: 10px;
@@ -194,6 +245,15 @@
             background-color: #e67e22;
         }
         
+        .rework-btn {
+            background-color: #e91e63;
+            color: white;
+        }
+        
+        .rework-btn:hover {
+            background-color: #c2185b;
+        }
+        
         .print-btn {
             background-color: #27ae60;
             color: white;
@@ -241,13 +301,39 @@
                 width: 100%;
             }
         }
+
+        @media (max-width: 768px) {
+            .logo {
+                position: static; /* Vuelve al flujo normal */
+                transform: none;
+                margin-bottom: 10px;
+            }
+            
+            .header-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Para pantallas muy pequeñas (menos de 480px) */
+        @media (max-width: 480px) {
+            .logo {
+                height: 40px; /* Reduce el tamaño en móviles */
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Contador de Puntos - Modeling y PTS</h1>
-            <p class="description">Selecciona los procedimientos realizados para calcular el total de puntos</p>
+            <div class="header-content">
+                <img src="img/Dentsply_Sirona_Logo.webp" alt="Dentsply Sirona Logo" class="logo">
+                <div class="header-text">
+                    <h1>Contador de Puntos - Modeling y PTS</h1>
+                    <p class="description">Selecciona los procedimientos realizados para calcular el total de puntos</p>
+                </div>
+            </div>
         </header>
         
         <div class="main-content">
@@ -282,6 +368,13 @@
                     <div class="summary-label">Total General</div>
                 </div>
             </div>
+            
+            <div class="quality-display">
+                <div class="quality-item">
+                    <div class="quality-value" id="quality-percentage">100%</div>
+                    <div class="quality-label">Calidad</div>
+                </div>
+            </div>
         </div>
         
         <div class="history">
@@ -293,6 +386,7 @@
         
         <div class="controls">
             <button class="control-btn undo-btn" id="undo-btn">Deshacer</button>
+            <button class="control-btn rework-btn" id="rework-btn">Marcar Rework</button>
             <button class="control-btn print-btn" id="print-btn">Imprimir PDF</button>
             <button class="control-btn reset-btn" id="reset-btn">Reiniciar</button>
         </div>
@@ -322,7 +416,10 @@
             history: [],
             modelingTotal: 0,
             ptsTotal: 0,
-            grandTotal: 0
+            grandTotal: 0,
+            modelingCases: 0, // Contador de casos de Modeling
+            reworkCases: 0,   // Contador de casos con rework
+            qualityPercentage: 100 // Calidad inicial 100%
         };
 
         // Elementos del DOM
@@ -333,8 +430,10 @@
         const grandTotalElement = document.getElementById('grand-total');
         const historyListElement = document.getElementById('history-list');
         const undoButton = document.getElementById('undo-btn');
+        const reworkButton = document.getElementById('rework-btn');
         const printButton = document.getElementById('print-btn');
         const resetButton = document.getElementById('reset-btn');
+        const qualityPercentageElement = document.getElementById('quality-percentage');
 
         // Inicializar la aplicación
         function init() {
@@ -344,6 +443,7 @@
             
             // Agregar event listeners
             undoButton.addEventListener('click', undoLastOperation);
+            reworkButton.addEventListener('click', addRework);
             printButton.addEventListener('click', printToPDF);
             resetButton.addEventListener('click', resetApplication);
         }
@@ -396,6 +496,8 @@
             
             if (operation.type === "Modeling") {
                 state.modelingTotal += operation.points;
+                state.modelingCases++; // Incrementar contador de casos Modeling
+                calculateQuality(); // Recalcular calidad
             } else {
                 state.ptsTotal += operation.points;
             }
@@ -406,6 +508,30 @@
             updateUI();
         }
 
+        // Agregar un rework
+        function addRework() {
+            if (state.modelingCases === 0) {
+                alert("No hay casos de Modeling para marcar como rework. Agrega primero un caso de Modeling.");
+                return;
+            }
+            
+            state.reworkCases++;
+            calculateQuality();
+            saveState();
+            updateUI();
+        }
+
+        // Calcular calidad
+        function calculateQuality() {
+            if (state.modelingCases === 0) {
+                state.qualityPercentage = 100;
+            } else {
+                // Calcular el porcentaje de calidad: (casos totales - casos con rework) / casos totales * 100
+                const approvedCases = state.modelingCases - state.reworkCases;
+                state.qualityPercentage = (approvedCases / state.modelingCases) * 100;
+            }
+        }
+
         // Deshacer última operación
         function undoLastOperation() {
             if (state.history.length === 0) return;
@@ -414,6 +540,8 @@
             
             if (lastOperation.type === "Modeling") {
                 state.modelingTotal -= lastOperation.points;
+                state.modelingCases--; // Decrementar contador de casos Modeling
+                calculateQuality(); // Recalcular calidad
             } else {
                 state.ptsTotal -= lastOperation.points;
             }
@@ -431,7 +559,10 @@
                     history: [],
                     modelingTotal: 0,
                     ptsTotal: 0,
-                    grandTotal: 0
+                    grandTotal: 0,
+                    modelingCases: 0,
+                    reworkCases: 0,
+                    qualityPercentage: 100
                 };
                 
                 saveState();
@@ -450,6 +581,16 @@
             modelingTotalElement.textContent = state.modelingTotal.toFixed(3);
             ptsTotalElement.textContent = state.ptsTotal.toFixed(3);
             grandTotalElement.textContent = state.grandTotal.toFixed(3);
+            
+            // Actualizar calidad
+            qualityPercentageElement.textContent = `${state.qualityPercentage.toFixed(1)}%`;
+            
+            // Aplicar color según la calidad
+            if (state.qualityPercentage >= 80) {
+                qualityPercentageElement.className = "quality-value good-quality";
+            } else {
+                qualityPercentageElement.className = "quality-value poor-quality";
+            }
             
             // Actualizar historial
             historyListElement.innerHTML = '';
@@ -476,8 +617,9 @@
                 });
             }
             
-            // Deshabilitar botón de deshacer si no hay historial
+            // Deshabilitar botones según el estado
             undoButton.disabled = state.history.length === 0;
+            reworkButton.disabled = state.modelingCases === 0;
         }
 
         // Inicializar la aplicación cuando se carga la página

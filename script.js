@@ -1,8 +1,8 @@
 
 // Datos de las operaciones
 const operations = [
-    { type: "Modeling", description: "Diagnostics", points: 0.15 },
     { type: "Modeling", description: "Unbonded", points: 0.25 },
+    { type: "Modeling", description: "Diagnostics", points: 0.15 },
     { type: "Modeling", description: "Retainers SA", points: 0.25 },
     { type: "Modeling", description: "Therapeutic", points: 0.333 },
     { type: "Modeling", description: "CT's", points: 0.3 },

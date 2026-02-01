@@ -1,4 +1,3 @@
-
 // Datos de las operaciones
 const operations = [
     { type: "Modeling", description: "Unbonded", points: 0.25 },
@@ -28,7 +27,8 @@ let state = {
     qualityPercentage: 100,
     caseCodes: new Set(), // Para almacenar códigos únicos de casos
     reworkCodes: new Set(), // Para almacenar códigos que han tenido rework
-    caseNotes: new Map() // Para almacenar notas por caso (id -> nota)
+    caseNotes: new Map(), // Para almacenar notas por caso (id -> nota)
+    reworkWithoutCode: 0 // Contador de reworks sin código
 };
 
 // Variables temporales para el flujo de nuevo caso
@@ -59,6 +59,7 @@ const omitCodeBtn = document.getElementById('omit-code-btn');
 const codeModalTitle = document.getElementById('code-modal-title');
 const reworkCodeInput = document.getElementById('rework-code');
 const confirmReworkBtn = document.getElementById('confirm-rework-btn');
+const omitReworkBtn = document.getElementById('omit-rework-btn');
 const cancelReworkBtn = document.getElementById('cancel-rework-btn');
 const notesTextarea = document.getElementById('notes-text');
 const saveNotesBtn = document.getElementById('save-notes-btn');
@@ -85,6 +86,7 @@ function init() {
     cancelCodeBtn.addEventListener('click', closeCodeModal);
     omitCodeBtn.addEventListener('click', omitCaseCode);
     confirmReworkBtn.addEventListener('click', confirmRework);
+    omitReworkBtn.addEventListener('click', omitReworkCode);
     cancelReworkBtn.addEventListener('click', closeReworkModal);
     saveNotesBtn.addEventListener('click', saveNotes);
     cancelNotesBtn.addEventListener('click', closeNotesModal);
@@ -113,6 +115,7 @@ function loadState() {
             state.caseCodes = new Set(parsed.caseCodes || []);
             state.reworkCodes = new Set(parsed.reworkCodes || []);
             state.caseNotes = new Map(parsed.caseNotes || []);
+            state.reworkWithoutCode = Number(parsed.reworkWithoutCode) || 0;
         } catch (e) {
             console.error("Error loading state:", e);
             resetState();
@@ -132,7 +135,8 @@ function resetState() {
         qualityPercentage: 100,
         caseCodes: new Set(),
         reworkCodes: new Set(),
-        caseNotes: new Map()
+        caseNotes: new Map(),
+        reworkWithoutCode: 0
     };
 }
 
@@ -245,27 +249,51 @@ function showReworkModal() {
 // Cerrar modal de rework
 function closeReworkModal() {
     reworkModal.style.display = 'none';
+    reworkCodeInput.value = '';
 }
 
-// Confirmar rework
+// Confirmar rework con código
 function confirmRework() {
     const code = reworkCodeInput.value.trim();
+    const reworkType = document.querySelector('input[name="rework-type"]:checked').value;
     
-    if (code.length === 0) {
-        alert('Por favor ingresa un código válido');
+    if (code.length === 0 || code.length > 10) {
+        alert('Por favor ingresa un código válido (máximo 10 caracteres)');
         return;
     }
     
-    // Verificar que el código existe en los casos
-    const caseExists = state.history.some(item => item.code === code && item.type === 'Modeling');
-    
-    if (!caseExists) {
-        alert('El código ingresado no corresponde a ningún caso de Modeling existente.');
-        return;
+    // Verificar si el código existe (si se ingresó un código específico)
+    if (code) {
+        const caseExists = state.history.some(item => item.code === code && item.type === 'Modeling');
+        
+        if (!caseExists) {
+            alert('El código ingresado no corresponde a ningún caso de Modeling existente. Si es un caso nuevo, usa "Sin Código".');
+            return;
+        }
+        
+        // Agregar rework con código y tipo especificado
+        addRework(code, reworkType);
+    } else {
+        // Si no hay código, usar omitir
+        omitReworkCode();
     }
     
-    // Agregar rework
-    addRework(code);
+    closeReworkModal();
+}
+
+// Omitir código para rework
+function omitReworkCode() {
+    const reworkType = document.querySelector('input[name="rework-type"]:checked').value;
+    
+    // Generar un código automático para el rework sin código
+    const autoCode = `RW-NOCODE-${state.reworkWithoutCode + 1}`;
+    
+    // Agregar rework con código automático
+    addRework(autoCode, reworkType);
+    
+    // Incrementar contador de reworks sin código
+    state.reworkWithoutCode++;
+    
     closeReworkModal();
 }
 
@@ -326,30 +354,56 @@ function addOperation(operation, code) {
 }
 
 // Agregar un rework
-function addRework(code) {
-    // Verificar si es el primer rework o un rework adicional
-    if (state.reworkCodes.has(code)) {
-        // Rework adicional: restar 0.10% de la calidad actual
+function addRework(code, reworkType) {
+    // Obtener el tipo de rework del selector
+    const isExistingRework = (reworkType === 'repetido');
+    
+    if (isExistingRework) {
+        // Rework REPETIDO según selección del usuario: restar 0.10% de la calidad actual
         state.qualityPercentage = Math.max(0, state.qualityPercentage - 0.10);
+        console.log(`Rework REPETIDO para código ${code}: -0.10% (selección manual)`);
     } else {
-        // Primer rework: cálculo proporcional normal
-        state.reworkCases++;
-        state.reworkCodes.add(code);
+        // Rework NUEVO según selección del usuario: cálculo proporcional normal
+        // Solo sumar a reworkCases si el código no estaba ya registrado
+        if (!state.reworkCodes.has(code)) {
+            state.reworkCases++;
+            state.reworkCodes.add(code);
+        }
         calculateQuality();
+        console.log(`Rework NUEVO para código ${code}: recalcula calidad (selección manual)`);
     }
     
-    // Marcar el caso como rework en el historial
+    // Marcar el caso como rework en el historial (si existe el caso)
     const caseItem = state.history.find(item => item.code === code && item.type === 'Modeling');
     if (caseItem) {
         caseItem.isRework = true;
         caseItem.reworkTimestamp = new Date().toLocaleString();
+        caseItem.reworkType = reworkType;
+    } else {
+        // Si no existe el caso en el historial (rework sin caso original),
+        // agregar un registro especial al historial
+        const reworkItem = {
+            type: "Modeling",
+            description: "Rework sin caso original",
+            points: 0,
+            id: Date.now() + Math.random(),
+            code: code,
+            timestamp: new Date().toLocaleString(),
+            isRework: true,
+            reworkTimestamp: new Date().toLocaleString(),
+            isReworkOnly: true,
+            reworkType: reworkType
+        };
+        
+        state.history.push(reworkItem);
+        state.caseCodes.add(code);
     }
     
     saveState();
     updateUI();
 }
 
-// Eliminar una operación específica
+// Eliminar una operación específica (FUNCIÓN CORREGIDA - BUG FIX)
 function removeOperation(operationId) {
     const operationIndex = state.history.findIndex(op => op.id === operationId);
     
@@ -357,31 +411,77 @@ function removeOperation(operationId) {
     
     const operation = state.history[operationIndex];
     
-    // Remover del historial
-    state.history.splice(operationIndex, 1);
-    
-    // Remover código
-    state.caseCodes.delete(operation.code);
-    
-    // Remover notas asociadas
-    state.caseNotes.delete(operation.id);
-    
-    // Si era rework, actualizar contadores
-    if (operation.isRework && operation.type === 'Modeling') {
+    // Si es un rework only (RW sin caso original)
+    if (operation.isReworkOnly) {
+        // Remover del historial
+        state.history.splice(operationIndex, 1);
+        
+        // Remover código
+        state.caseCodes.delete(operation.code);
+        
+        // Remover notas asociadas
+        state.caseNotes.delete(operation.id);
+        
+        // Remover de reworkCodes
         state.reworkCodes.delete(operation.code);
-        state.reworkCases = Math.max(0, state.reworkCases - 1);
-    }
-    
-    // Actualizar totales
-    if (operation.type === "Modeling") {
-        state.modelingTotal -= operation.points;
-        state.modelingCases--;
-        calculateQuality();
+        
+        // CORRECCIÓN: Ajustar calidad según el tipo de rework
+        if (operation.reworkType === 'nuevo') {
+            // Si era rework NUEVO: sumar 1 caso de vuelta
+            state.reworkCases = Math.max(0, state.reworkCases - 1);
+            calculateQuality(); // Recalcular calidad normalmente
+        } else if (operation.reworkType === 'repetido') {
+            // Si era rework REPETIDO: sumar 0.10% de vuelta
+            state.qualityPercentage = Math.min(100, state.qualityPercentage + 0.10);
+        }
+        
+        console.log(`Eliminado rework ${operation.reworkType}: ${operation.code}`);
     } else {
-        state.ptsTotal -= operation.points;
+        // Si es un caso normal (con puntos)
+        
+        // Remover del historial
+        state.history.splice(operationIndex, 1);
+        
+        // Remover código
+        state.caseCodes.delete(operation.code);
+        
+        // Remover notas asociadas
+        state.caseNotes.delete(operation.id);
+        
+        // Si era rework, actualizar contadores
+        if (operation.isRework && operation.type === 'Modeling') {
+            // Remover de reworkCodes
+            state.reworkCodes.delete(operation.code);
+            
+            // CORRECCIÓN: Ajustar calidad según el tipo de rework
+            if (operation.reworkType === 'nuevo') {
+                // Si era rework NUEVO: sumar 1 caso de vuelta
+                state.reworkCases = Math.max(0, state.reworkCases - 1);
+                calculateQuality(); // Recalcular calidad
+            } else if (operation.reworkType === 'repetido') {
+                // Si era rework REPETIDO: sumar 0.10% de vuelta
+                state.qualityPercentage = Math.min(100, state.qualityPercentage + 0.10);
+                // NO llamar a calculateQuality() para no interferir
+            }
+            
+            console.log(`Eliminado rework ${operation.reworkType} del caso: ${operation.code}`);
+        }
+        
+        // Actualizar totales de puntos
+        if (operation.type === "Modeling") {
+            state.modelingTotal -= operation.points;
+            state.modelingCases--;
+            
+            // Solo recalcular calidad si no era rework repetido
+            if (!(operation.isRework && operation.reworkType === 'repetido')) {
+                calculateQuality();
+            }
+        } else {
+            state.ptsTotal -= operation.points;
+        }
+        
+        state.grandTotal = state.modelingTotal + state.ptsTotal;
     }
-    
-    state.grandTotal = state.modelingTotal + state.ptsTotal;
     
     saveState();
     updateUI();
@@ -400,7 +500,7 @@ function calculateQuality() {
     }
 }
 
-// Deshacer última operación
+// Deshacer última operación (FUNCIÓN CORREGIDA - BUG FIX)
 function undoLastOperation() {
     if (state.history.length === 0) return;
     
@@ -415,18 +515,46 @@ function undoLastOperation() {
     // Si era rework, actualizar contadores
     if (lastOperation.isRework && lastOperation.type === 'Modeling') {
         state.reworkCodes.delete(lastOperation.code);
-        state.reworkCases = Math.max(0, state.reworkCases - 1);
+        
+        // CORRECCIÓN: Ajustar calidad según el tipo de rework
+        if (lastOperation.reworkType === 'nuevo') {
+            // Si era rework NUEVO: sumar 1 caso de vuelta
+            state.reworkCases = Math.max(0, state.reworkCases - 1);
+        } else if (lastOperation.reworkType === 'repetido') {
+            // Si era rework REPETIDO: sumar 0.10% de vuelta
+            state.qualityPercentage = Math.min(100, state.qualityPercentage + 0.10);
+        }
     }
     
-    if (lastOperation.type === "Modeling") {
-        state.modelingTotal -= lastOperation.points;
-        state.modelingCases--;
-        calculateQuality();
+    // Si era rework only, ajustar calidad
+    if (lastOperation.isReworkOnly) {
+        state.reworkCodes.delete(lastOperation.code);
+        
+        // CORRECCIÓN: Ajustar calidad según el tipo de rework
+        if (lastOperation.reworkType === 'nuevo') {
+            // Si era rework NUEVO: sumar 1 caso de vuelta
+            state.reworkCases = Math.max(0, state.reworkCases - 1);
+        } else if (lastOperation.reworkType === 'repetido') {
+            // Si era rework REPETIDO: sumar 0.10% de vuelta
+            state.qualityPercentage = Math.min(100, state.qualityPercentage + 0.10);
+        }
     } else {
-        state.ptsTotal -= lastOperation.points;
+        // Actualizar totales si era un caso normal
+        if (lastOperation.type === "Modeling") {
+            state.modelingTotal -= lastOperation.points;
+            state.modelingCases--;
+        } else {
+            state.ptsTotal -= lastOperation.points;
+        }
+        
+        state.grandTotal = state.modelingTotal + state.ptsTotal;
     }
     
-    state.grandTotal = state.modelingTotal + state.ptsTotal;
+    // Recalcular calidad solo si no era rework repetido
+    if (!(lastOperation.isRework && lastOperation.reworkType === 'repetido') && 
+        !(lastOperation.isReworkOnly && lastOperation.reworkType === 'repetido')) {
+        calculateQuality();
+    }
     
     saveState();
     updateUI();
@@ -573,14 +701,14 @@ function generateHistoryHTML() {
             <div class="history-item ${item.isRework ? 'rework-item' : ''}">
                 <div class="case-header">
                     <div><strong>${item.code}</strong> - ${item.type}</div>
-                    <div>${item.points.toFixed(3)} puntos</div>
+                    ${item.points > 0 ? `<div>${item.points.toFixed(3)} puntos</div>` : '<div>Rework</div>'}
                 </div>
                 <div class="case-details">
                     <div><strong>Operación:</strong> ${item.description}</div>
                     <div><strong>Fecha:</strong> ${item.timestamp}</div>
                 </div>
                 ${item.isRework ? `
-                    <div class="rework-badge">⚠️ CASO REWORK</div>
+                    <div class="rework-badge">⚠️ CASO REWORK (${item.reworkType || 'nuevo'})</div>
                 ` : ''}
                 ${hasNotes ? `
                     <div class="case-notes">
@@ -646,7 +774,11 @@ function updateUI() {
             
             const pointsSpan = document.createElement('span');
             pointsSpan.className = 'case-points';
-            pointsSpan.textContent = `${op.points.toFixed(3)} pts`;
+            if (op.points > 0) {
+                pointsSpan.textContent = `${op.points.toFixed(3)} pts`;
+            } else {
+                pointsSpan.textContent = 'Rework';
+            }
             
             headerDiv.appendChild(codeSpan);
             headerDiv.appendChild(pointsSpan);
@@ -676,7 +808,8 @@ function updateUI() {
             if (op.isRework) {
                 const reworkSpan = document.createElement('div');
                 reworkSpan.className = 'case-rework';
-                reworkSpan.textContent = '⚠️ Rework';
+                const reworkType = op.reworkType === 'repetido' ? ' (Repetido: -0.10%)' : ' (Nuevo: -1 caso)';
+                reworkSpan.textContent = `⚠️ Rework${reworkType}`;
                 contentDiv.appendChild(reworkSpan);
             }
             

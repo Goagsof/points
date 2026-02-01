@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -88,14 +87,36 @@
         </div>
     </div>
 
-    <!-- Modal para rework -->
+    <!-- Modal para rework (COMPATIBLE con JS existente) -->
     <div id="rework-modal" class="modal">
-        <div class="modal-content">
-            <h3>Marcar caso como Rework</h3>
-            <input type="text" id="rework-code" placeholder="Ingresa el código del caso">
-            <div class="modal-actions">
-                <button id="confirm-rework-btn" class="btn confirm-btn">Confirmar Rework</button>
-                <button id="cancel-rework-btn" class="btn cancel-btn">Cancelar</button>
+        <div class="modal-content compact-modal">
+            <h3>Marcar Rework</h3>
+            
+            <div class="rw-type-selector">
+                <label class="rw-option-label">
+                    <input type="radio" name="rework-type" value="nuevo" checked>
+                    <div class="rw-option-content">
+                        <strong>Rework Nuevo</strong>
+                        <small>Resta 1 caso de calidad</small>
+                    </div>
+                </label>
+                
+                <label class="rw-option-label">
+                    <input type="radio" name="rework-type" value="repetido">
+                    <div class="rw-option-content">
+                        <strong>Rework Existente</strong>
+                        <small>Resta 0.10% de calidad</small>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="rw-code-section">
+                <input type="text" id="rework-code" placeholder="Código del caso" maxlength="10">
+                <div class="rw-actions">
+                    <button id="confirm-rework-btn" class="btn confirm-btn">Confirmar</button>
+                    <button id="omit-rework-btn" class="btn omit-btn">Sin Código</button>
+                    <button id="cancel-rework-btn" class="btn cancel-btn">Cancelar</button>
+                </div>
             </div>
         </div>
     </div>

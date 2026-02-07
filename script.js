@@ -69,9 +69,70 @@ const notesModalTitle = document.getElementById('notes-modal-title');
 // Variable para almacenar el caso actual para notas
 let currentNoteCaseId = null;
 
+// ========== SISTEMA DE CAMBIO DE FONDO ==========
+const backgroundImages = [
+    '1.jpg',
+    '2.jpg', 
+    '3.jpg',
+    '4.jpg',
+    '5.jpg',
+    '6.jpg'
+];
+
+let currentBackgroundIndex = 0;
+
+// Cargar el índice de fondo guardado
+function loadBackgroundIndex() {
+    const savedIndex = localStorage.getItem('backgroundIndex');
+    if (savedIndex !== null) {
+        currentBackgroundIndex = parseInt(savedIndex, 10);
+        if (currentBackgroundIndex >= backgroundImages.length) {
+            currentBackgroundIndex = 0;
+        }
+    }
+    applyBackground();
+}
+
+// Guardar el índice de fondo
+function saveBackgroundIndex() {
+    localStorage.setItem('backgroundIndex', currentBackgroundIndex.toString());
+}
+
+// Aplicar el fondo actual
+function applyBackground() {
+    const imageUrl = `img/${backgroundImages[currentBackgroundIndex]}`;
+    document.body.style.backgroundImage = `url('${imageUrl}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    
+    // Añadir un overlay oscuro para mejorar legibilidad
+    if (!document.querySelector('.background-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'background-overlay';
+        document.body.appendChild(overlay);
+    }
+}
+
+// Cambiar al siguiente fondo
+function nextBackground() {
+    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundImages.length;
+    applyBackground();
+    saveBackgroundIndex();
+    showBackgroundNotification();
+}
+
+// Mostrar notificación del fondo actual
+function showBackgroundNotification() {
+    console.log(`Fondo cambiado a: ${backgroundImages[currentBackgroundIndex]}`);
+}
+// ========== FIN SISTEMA DE FONDO ==========
+
 // Inicializar la aplicación
 function init() {
     loadState();
+    loadBackgroundIndex(); 
     renderButtons();
     updateUI();
     
@@ -97,6 +158,12 @@ function init() {
         if (e.target === reworkModal) closeReworkModal();
         if (e.target === notesModal) closeNotesModal();
     });
+    
+    // <-- AÑADIR ESTO: Event listener para el botón de cambio de fondo
+    const backgroundBtn = document.getElementById('change-background-btn');
+    if (backgroundBtn) {
+        backgroundBtn.addEventListener('click', nextBackground);
+    }
 }
 
 // Cargar estado desde localStorage
@@ -819,13 +886,13 @@ function updateUI() {
             // Botón de notas
             const notesButton = document.createElement('button');
             notesButton.className = 'notes-btn';
-            notesButton.textContent = state.caseNotes.has(op.id) ? '📝 Ver Nota' : '✏️ Agregar Nota';
+            notesButton.innerHTML = '<svg viewBox="0 0 24 24" class="svgIcon" width="16" height="16"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>';
             notesButton.addEventListener('click', () => showNotesModal(op.id));
-            
-            // Botón de eliminar
+
+            // Botón de eliminar con icono de basurero
             const deleteButton = document.createElement('button');
             deleteButton.className = 'delete-btn';
-            deleteButton.textContent = 'Eliminar';
+            deleteButton.innerHTML = '<svg viewBox="0 0 448 512" class="svgIcon" width="14" height="14"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path></svg>';
             deleteButton.addEventListener('click', () => removeOperation(op.id));
             
             actionsDiv.appendChild(notesButton);

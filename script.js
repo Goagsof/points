@@ -172,11 +172,11 @@ function nextBackground() {
 
 // Mostrar notificación del fondo actual
 function showBackgroundNotification() {
-    console.log(`Fondo cambiado a: ${backgroundImages[currentBackgroundIndex]}`);
+    console.log(`🎃 Fondo cambiado a: ${backgroundImages[currentBackgroundIndex]} 👻`);
 }
 // ========== FIN SISTEMA DE FONDO ==========
 
-// ========== NUEVO: SISTEMA DE CAMBIO DE DEPARTAMENTO ==========
+// ========== SISTEMA DE CAMBIO DE DEPARTAMENTO ==========
 function switchDepartment(department) {
     currentDepartment = department;
     
@@ -206,8 +206,8 @@ function renderButtons() {
         
         // Restaurar los títulos originales
         if (operationsColumns.length >= 2) {
-            operationsColumns[0].querySelector('h2').textContent = 'Modeling';
-            operationsColumns[1].querySelector('h2').textContent = 'PTS';
+            operationsColumns[0].querySelector('h2').textContent = '🎃 Modeling';
+            operationsColumns[1].querySelector('h2').textContent = '👻 PTS';
             operationsColumns[1].style.display = 'flex';
         }
         
@@ -217,7 +217,7 @@ function renderButtons() {
         dept.operations.forEach(op => {
             const button = document.createElement('button');
             button.className = 'operation-btn';
-            button.textContent = `${op.description} (${op.points.toFixed(3)})`;
+            button.textContent = `🎃 ${op.description} (${op.points.toFixed(3)})`;
             button.addEventListener('click', () => {
                 currentCaseType = 'Modeling';
                 currentOperation = op;
@@ -229,7 +229,7 @@ function renderButtons() {
         dept.ptsOperations.forEach(op => {
             const button = document.createElement('button');
             button.className = 'operation-btn pts-btn';
-            button.textContent = `${op.description} (${op.points.toFixed(3)})`;
+            button.textContent = `👻 ${op.description} (${op.points.toFixed(3)})`;
             button.addEventListener('click', () => {
                 currentCaseType = 'PTS';
                 currentOperation = op;
@@ -244,7 +244,8 @@ function renderButtons() {
         
         // Cambiar el título de la primera columna
         if (operationsColumns.length >= 1) {
-            operationsColumns[0].querySelector('h2').textContent = dept.name;
+            const deptEmoji = currentDepartment === 'di' ? '🕷️' : '👻';
+            operationsColumns[0].querySelector('h2').textContent = `${deptEmoji} ${dept.name}`;
         }
         
         // Ocultar la segunda columna (PTS)
@@ -255,10 +256,12 @@ function renderButtons() {
         // Agregar clase para centrar la columna
         operationsSection.classList.add('single-column');
         
+        const deptEmoji = currentDepartment === 'di' ? '🕷️' : '👻';
+        
         dept.operations.forEach(op => {
             const button = document.createElement('button');
             button.className = 'operation-btn';
-            button.textContent = `${op.description} (${op.points.toFixed(3)})`;
+            button.textContent = `${deptEmoji} ${op.description} (${op.points.toFixed(3)})`;
             button.addEventListener('click', () => {
                 currentCaseType = dept.name;
                 currentOperation = op;
@@ -269,9 +272,9 @@ function renderButtons() {
     }
 }
 
-// Mostrar input de código (sin cambios)
+// Mostrar input de código (sin cambios de lógica, solo emoji)
 function showCodeInput() {
-    codeModalTitle.textContent = `Ingresar código para ${currentOperation.description}`;
+    codeModalTitle.textContent = `🎃 Ingresar código para ${currentOperation.description}`;
     codeModal.style.display = 'block';
     caseCodeInput.value = '';
     caseCodeInput.focus();
@@ -318,7 +321,7 @@ function confirmCaseCode() {
     closeCodeModal();
 }
 
-// Mostrar modal de rework (sin cambios)
+// Mostrar modal de rework (sin cambios de lógica, solo emoji)
 function showReworkModal() {
     if (state.modelingCases === 0) {
         alert("No hay casos de Modeling para marcar como rework.");
@@ -381,13 +384,13 @@ function omitReworkCode() {
     closeReworkModal();
 }
 
-// Mostrar modal de notas
+// Mostrar modal de notas (solo emoji en el título)
 function showNotesModal(caseId) {
     currentNoteCaseId = caseId;
     const caseItem = state.history.find(item => item.id === caseId);
     
     if (caseItem) {
-        notesModalTitle.textContent = `Notas para caso: ${caseItem.code}`;
+        notesModalTitle.textContent = `📝 Notas para caso: ${caseItem.code} 🕸️`;
         notesTextarea.value = state.caseNotes.get(caseId) || '';
         notesModal.style.display = 'block';
         notesTextarea.focus();
@@ -443,7 +446,7 @@ function addOperation(operation, code) {
     updateUI();
 }
 
-// Agregar un rework (sin cambios)
+// Agregar un rework (solo cambio cosmético en la descripción)
 function addRework(code, reworkType) {
     const isExistingRework = (reworkType === 'repetido');
     
@@ -467,7 +470,7 @@ function addRework(code, reworkType) {
     } else {
         const reworkItem = {
             type: "Modeling",
-            description: "Rework sin caso original",
+            description: "🧟 Rework sin caso original",
             points: 0,
             id: Date.now() + Math.random(),
             code: code,
@@ -672,13 +675,13 @@ function loadState() {
     }
 }
 
-// Imprimir a PDF (MODIFICADO para mostrar departamento)
+// Imprimir a PDF (MODIFICADO para mostrar departamento + emojis Halloween)
 function printToPDF() {
     const printContent = `
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Reporte de Puntos - ${getCurrentDate()}</title>
+            <title>🎃 Reporte de Puntos - ${getCurrentDate()} 👻</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 .header { text-align: center; margin-bottom: 30px; }
@@ -704,51 +707,51 @@ function printToPDF() {
         </head>
         <body>
             <div class="header">
-                <h1>Reporte de Puntos</h1>
-                <p>Fecha: ${getCurrentDate()}</p>
+                <h1>🎃 Reporte de Puntos 👻</h1>
+                <p>📅 Fecha: ${getCurrentDate()}</p>
             </div>
             
             <div class="summary">
                 <div class="summary-item">
                     <div class="summary-value">${state.modelingTotal.toFixed(3)}</div>
-                    <div>Total Modeling + DI + QC</div>
+                    <div>🎃 Total Modeling + DI + QC</div>
                 </div>
                 <div class="summary-item">
                     <div class="summary-value">${state.ptsTotal.toFixed(3)}</div>
-                    <div>Total PTS</div>
+                    <div>👻 Total PTS</div>
                 </div>
                 <div class="summary-item">
                     <div class="summary-value">${state.grandTotal.toFixed(3)}</div>
-                    <div>Total General</div>
+                    <div>🕷️ Total General</div>
                 </div>
                 <div class="summary-item">
                     <div class="summary-value" style="color: ${state.qualityPercentage >= 80 ? '#27ae60' : '#e74c3c'}">
                         ${state.qualityPercentage.toFixed(2)}%
                     </div>
-                    <div>Calidad Modeling</div>
+                    <div>⚰️ Calidad Modeling</div>
                 </div>
             </div>
             
             <div class="cases-summary">
-                <h3>Resumen de Casos</h3>
+                <h3>🕸️ Resumen de Casos</h3>
                 <div class="cases-grid">
                     <div class="case-item">
                         <div class="summary-value">${state.modelingCases}</div>
-                        <div>Casos Modeling</div>
+                        <div>🎃 Casos Modeling</div>
                     </div>
                     <div class="case-item">
                         <div class="summary-value">${getPTSCasesCount()}</div>
-                        <div>Casos PTS</div>
+                        <div>👻 Casos PTS</div>
                     </div>
                     <div class="case-item">
                         <div class="summary-value">${state.history.length}</div>
-                        <div>Total Casos</div>
+                        <div>🦇 Total Casos</div>
                     </div>
                 </div>
             </div>
             
             <div class="history">
-                <h3>Detalle de Casos (${state.history.length} casos)</h3>
+                <h3>📜 Detalle de Casos (${state.history.length} casos)</h3>
                 ${generateHistoryHTML()}
             </div>
         </body>
@@ -781,7 +784,7 @@ function getPTSCasesCount() {
 
 function generateHistoryHTML() {
     if (state.history.length === 0) {
-        return '<p>No hay casos registrados</p>';
+        return '<p>🕸️ No hay casos registrados 🕸️</p>';
     }
     
     let html = '';
@@ -798,21 +801,21 @@ function generateHistoryHTML() {
             <div class="history-item ${item.isRework ? 'rework-item' : ''}">
                 <div class="case-header">
                     <div>
-                        <strong>${item.code}</strong> - ${item.type || deptName}
+                        <strong>🎃 ${item.code}</strong> - ${item.type || deptName}
                         <span class="department-badge">${deptName}</span>
                     </div>
-                    ${item.points > 0 ? `<div>${item.points.toFixed(3)} puntos</div>` : '<div>Rework</div>'}
+                    ${item.points > 0 ? `<div>💎 ${item.points.toFixed(3)} puntos</div>` : '<div>🧟 Rework</div>'}
                 </div>
                 <div class="case-details">
-                    <div><strong>Operación:</strong> ${item.description}</div>
-                    <div><strong>Fecha:</strong> ${item.timestamp}</div>
+                    <div><strong>⚙️ Operación:</strong> ${item.description}</div>
+                    <div><strong>📅 Fecha:</strong> ${item.timestamp}</div>
                 </div>
                 ${item.isRework ? `
                     <div class="rework-badge">⚠️ CASO REWORK (${item.reworkType || 'nuevo'})</div>
                 ` : ''}
                 ${hasNotes ? `
                     <div class="case-notes">
-                        <strong>Notas:</strong> ${notes}
+                        <strong>📝 Notas:</strong> ${notes}
                     </div>
                 ` : ''}
             </div>
@@ -821,7 +824,7 @@ function generateHistoryHTML() {
     return html;
 }
 
-// Actualizar la interfaz de usuario
+// Actualizar la interfaz de usuario (solo emojis en strings visibles)
 function updateUI() {
     // Actualizar totales
     modelingTotalElement.textContent = state.modelingTotal.toFixed(3);
@@ -861,7 +864,7 @@ function updateUI() {
     if (filteredHistory.length === 0) {
         const emptyMessage = document.createElement('div');
         emptyMessage.className = 'history-item';
-        emptyMessage.textContent = 'No hay casos registrados en este departamento';
+        emptyMessage.textContent = '🕸️ No hay casos registrados en este departamento 🕸️';
         historyListElement.appendChild(emptyMessage);
     } else {
         const sortedHistory = [...filteredHistory].sort((a, b) => 
@@ -880,14 +883,14 @@ function updateUI() {
             
             const codeSpan = document.createElement('span');
             codeSpan.className = 'case-code';
-            codeSpan.textContent = `Código: ${op.code}`;
+            codeSpan.textContent = `🎃 Código: ${op.code}`;
             
             const pointsSpan = document.createElement('span');
             pointsSpan.className = 'case-points';
             if (op.points > 0) {
-                pointsSpan.textContent = `${op.points.toFixed(3)} pts`;
+                pointsSpan.textContent = `💎 ${op.points.toFixed(3)} pts`;
             } else {
-                pointsSpan.textContent = 'Rework';
+                pointsSpan.textContent = '🧟 Rework';
             }
             
             headerDiv.appendChild(codeSpan);
@@ -899,7 +902,7 @@ function updateUI() {
             
             const timestampSpan = document.createElement('div');
             timestampSpan.className = 'case-timestamp';
-            timestampSpan.textContent = `Fecha: ${op.timestamp}`;
+            timestampSpan.textContent = `📅 Fecha: ${op.timestamp}`;
             
             contentDiv.appendChild(headerDiv);
             contentDiv.appendChild(descriptionSpan);
@@ -918,7 +921,7 @@ function updateUI() {
                 const reworkSpan = document.createElement('div');
                 reworkSpan.className = 'case-rework';
                 const reworkType = op.reworkType === 'repetido' ? ' (Repetido: -0.10%)' : ' (Nuevo: -1 caso)';
-                reworkSpan.textContent = `⚠️ Rework${reworkType}`;
+                reworkSpan.textContent = `🧟 Rework${reworkType}`;
                 contentDiv.appendChild(reworkSpan);
             }
             

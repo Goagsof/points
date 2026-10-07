@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador de Puntos - DI | Modeling | QC</title>
+    <title>🎃 Contador de Puntos - DI | Modeling | QC 👻</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,21 +12,19 @@
             <div class="header-content">
                 <img src="img/Dentsply_Sirona_Logo.webp" alt="Dentsply Sirona Logo" class="logo">
                 <div class="header-text">
-                    <h1>Contador de Puntos - Modeling y PTS</h1>
+                    <h1>🎃 Contador de Puntos - Modeling y PTS 👻</h1>
                 </div>
                 <!-- Botón para cambiar fondo -->
                 <button id="change-background-btn" class="background-btn" title="Cambiar fondo">
-                    <svg viewBox="0 0 24 24" width="24" height="24">
-                        <path d="M12 6c3.31 0 6 2.69 6 6 0 3.31-2.69 6-6 6s-6-2.69-6-6c0-3.31 2.69-6 6-6zm0-2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm3 13l-3-3-3 3h6z"/>
-                    </svg>
+                    <span style="font-size:22px;">🎃</span>
                 </button>
             </div>
             
-            <!-- NUEVO: Tabs de departamentos -->
+            <!-- Tabs de departamentos -->
             <div class="department-tabs">
-                <button class="tab-btn" data-department="di">DI</button>
-                <button class="tab-btn active" data-department="modeling">Modeling</button>
-                <button class="tab-btn" data-department="qc">QC</button>
+                <button class="tab-btn" data-department="di">🕷️ DI</button>
+                <button class="tab-btn active" data-department="modeling">🧟 Modeling</button>
+                <button class="tab-btn" data-department="qc">👻 QC</button>
             </div>
         </header>
 
@@ -36,19 +34,19 @@
                 <div class="summary-content">
                     <div class="summary-item">
                         <div class="summary-value" id="modeling-total">0.000</div>
-                        <div class="summary-label">Total Modeling</div>
+                        <div class="summary-label">🎃 Total Modeling</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-value" id="pts-total">0.000</div>
-                        <div class="summary-label">Total PTS</div>
+                        <div class="summary-label">👻 Total PTS</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-value" id="grand-total">0.000</div>
-                        <div class="summary-label">Total General</div>
+                        <div class="summary-label">🕷️ Total General</div>
                     </div>
                     <div class="summary-item">
                         <div class="quality-value good-quality" id="quality-percentage">100%</div>
-                        <div class="summary-label">Calidad</div>
+                        <div class="summary-label">⚰️ Calidad</div>
                     </div>
                 </div>
             </section>
@@ -56,13 +54,13 @@
             <!-- Botones de operaciones -->
             <section class="operations-section">
                 <div class="operations-column">
-                    <h2>Modeling</h2>
+                    <h2>🎃 Modeling</h2>
                     <div class="buttons-container" id="modeling-buttons">
                         <!-- Los botones se generan dinámicamente -->
                     </div>
                 </div>
                 <div class="operations-column">
-                    <h2>PTS</h2>
+                    <h2>👻 PTS</h2>
                     <div class="buttons-container" id="pts-buttons">
                         <!-- Los botones se generan dinámicamente -->
                     </div>
@@ -71,15 +69,15 @@
 
             <!-- Botones de control -->
             <section class="control-section">
-                <button id="undo-btn" class="control-btn undo-btn" disabled>Deshacer</button>
-                <button id="rework-btn" class="control-btn rework-btn" disabled>Rework</button>
-                <button id="print-btn" class="control-btn print-btn">Imprimir PDF</button>
-                <button id="reset-btn" class="control-btn reset-btn">Reiniciar</button>
+                <button id="undo-btn" class="control-btn undo-btn" disabled>↩️ Deshacer</button>
+                <button id="rework-btn" class="control-btn rework-btn" disabled>🧟 Rework</button>
+                <button id="print-btn" class="control-btn print-btn">🖨️ Imprimir PDF</button>
+                <button id="reset-btn" class="control-btn reset-btn">🔄 Reiniciar</button>
             </section>
 
             <!-- Historial de casos -->
             <section class="history-section">
-                <h2>Historial de Casos</h2>
+                <h2>📜 Historial de Casos 🕸️</h2>
                 <div class="history-list" id="history-list">
                     <!-- El historial se genera dinámicamente -->
                 </div>
@@ -90,26 +88,26 @@
     <!-- Modal para ingresar código -->
     <div id="code-modal" class="modal">
         <div class="modal-content">
-            <h3 id="code-modal-title">Ingresar código del caso</h3>
+            <h3 id="code-modal-title">🎃 Ingresar código del caso</h3>
             <input type="text" id="case-code" placeholder="Ingresa el código (máx. 10 caracteres)" maxlength="10">
             <div class="modal-actions">
-                <button id="confirm-code-btn" class="btn confirm-btn">Confirmar</button>
-                <button id="omit-code-btn" class="btn omit-btn">Omitir Código</button>
-                <button id="cancel-code-btn" class="btn cancel-btn">Cancelar</button>
+                <button id="confirm-code-btn" class="btn confirm-btn">✅ Confirmar</button>
+                <button id="omit-code-btn" class="btn omit-btn">⏭️ Omitir Código</button>
+                <button id="cancel-code-btn" class="btn cancel-btn">❌ Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal para rework (COMPATIBLE con JS existente) -->
+    <!-- Modal para rework -->
     <div id="rework-modal" class="modal">
         <div class="modal-content compact-modal">
-            <h3>Marcar Rework</h3>
+            <h3>🧟 Marcar Rework ⚰️</h3>
             
             <div class="rw-type-selector">
                 <label class="rw-option-label">
                     <input type="radio" name="rework-type" value="nuevo" checked>
                     <div class="rw-option-content">
-                        <strong>Rework Nuevo</strong>
+                        <strong>🧟 Rework Nuevo</strong>
                         <small>Resta 1 caso de calidad</small>
                     </div>
                 </label>
@@ -117,7 +115,7 @@
                 <label class="rw-option-label">
                     <input type="radio" name="rework-type" value="repetido">
                     <div class="rw-option-content">
-                        <strong>Rework Existente</strong>
+                        <strong>👻 Rework Existente</strong>
                         <small>Resta 0.10% de calidad</small>
                     </div>
                 </label>
@@ -126,9 +124,9 @@
             <div class="rw-code-section">
                 <input type="text" id="rework-code" placeholder="Código del caso" maxlength="10">
                 <div class="rw-actions">
-                    <button id="confirm-rework-btn" class="btn confirm-btn">Confirmar</button>
-                    <button id="omit-rework-btn" class="btn omit-btn">Sin Código</button>
-                    <button id="cancel-rework-btn" class="btn cancel-btn">Cancelar</button>
+                    <button id="confirm-rework-btn" class="btn confirm-btn">✅ Confirmar</button>
+                    <button id="omit-rework-btn" class="btn omit-btn">⏭️ Sin Código</button>
+                    <button id="cancel-rework-btn" class="btn cancel-btn">❌ Cancelar</button>
                 </div>
             </div>
         </div>
@@ -137,11 +135,11 @@
     <!-- Modal para notas -->
     <div id="notes-modal" class="modal">
         <div class="modal-content">
-            <h3 id="notes-modal-title">Notas del Caso</h3>
+            <h3 id="notes-modal-title">📝 Notas del Caso 🕸️</h3>
             <textarea id="notes-text" placeholder="Escribe tus notas aquí..." rows="6"></textarea>
             <div class="modal-actions">
-                <button id="save-notes-btn" class="btn confirm-btn">Guardar Nota</button>
-                <button id="cancel-notes-btn" class="btn cancel-btn">Cancelar</button>
+                <button id="save-notes-btn" class="btn confirm-btn">💾 Guardar Nota</button>
+                <button id="cancel-notes-btn" class="btn cancel-btn">❌ Cancelar</button>
             </div>
         </div>
     </div>

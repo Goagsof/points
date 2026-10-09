@@ -75,6 +75,27 @@
                 <button id="reset-btn" class="control-btn reset-btn">🔄 Reiniciar</button>
             </section>
 
+            <!-- NUEVO: Slider de Tiempo Muerto -->
+            <section class="downtime-section">
+                <div class="downtime-header">
+                    <h2>💀 Tiempo Muerto 🕰️</h2>
+                    <div class="downtime-value-badge">
+                        <span id="downtime-value">0</span> / 8 pts
+                    </div>
+                </div>
+                <p class="downtime-description">
+                    Suma 1 punto por cada hora sin producción (máx. 8 hrs)
+                </p>
+                <div class="downtime-slider-wrapper">
+                    <span class="slider-end-label">0</span>
+                    <input type="range" id="downtime-slider" min="0" max="8" step="1" value="0">
+                    <span class="slider-end-label">8</span>
+                </div>
+                <div class="downtime-actions">
+                    <button id="reset-downtime-btn" class="downtime-reset-btn">🔄 Reiniciar Tiempo Muerto</button>
+                </div>
+            </section>
+
             <!-- Historial de casos -->
             <section class="history-section">
                 <h2>📜 Historial de Casos 🕸️</h2>

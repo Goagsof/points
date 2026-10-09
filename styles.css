@@ -1056,3 +1056,226 @@ header {
 .operations-column h2 {
     animation: spookyGlow 3.5s ease-in-out infinite;
 }
+
+/* ===== SECCIÓN TIEMPO MUERTO (SLIDER) ===== */
+.downtime-section {
+    background: rgba(30, 0, 50, 0.35);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 
+        0 8px 32px rgba(139, 0, 255, 0.2),
+        0 0 0 1px rgba(255, 140, 0, 0.15) inset;
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.downtime-section::before {
+    content: '🦇';
+    position: absolute;
+    top: 8px;
+    right: 15px;
+    font-size: 1.4rem;
+    opacity: 0.4;
+    animation: batFloat 3s ease-in-out infinite;
+}
+
+.downtime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.downtime-header h2 {
+    color: #ffb347;
+    text-shadow: 0 0 8px rgba(255, 107, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.downtime-value-badge {
+    background: linear-gradient(135deg, rgba(255, 107, 0, 0.85), rgba(139, 0, 255, 0.75));
+    border: 1px solid rgba(255, 200, 100, 0.6);
+    border-radius: 30px;
+    padding: 8px 20px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
+    text-shadow: 0 0 6px rgba(255, 200, 100, 0.6);
+    min-width: 100px;
+    text-align: center;
+}
+
+.downtime-value-badge #downtime-value {
+    font-size: 1.3rem;
+    color: #ffcc66;
+}
+
+.downtime-description {
+    color: rgba(245, 230, 211, 0.85);
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Wrapper del slider con etiquetas 0 y 8 */
+.downtime-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.slider-end-label {
+    color: #ffb347;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 0 6px rgba(255, 107, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Slider estilizado */
+#downtime-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 12px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, 
+        #ff3d00 0%, 
+        #ff6b00 25%, 
+        #ffaa00 50%, 
+        #b347ff 75%, 
+        #6a00ff 100%);
+    outline: none;
+    cursor: pointer;
+    box-shadow: 
+        0 2px 10px rgba(255, 107, 0, 0.4),
+        inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 200, 100, 0.3);
+}
+
+/* Thumb para WebKit (Chrome/Safari) */
+#downtime-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffcc66, #ff6b00 60%, #8b0000 100%);
+    cursor: grab;
+    border: 2px solid #fff3d6;
+    box-shadow: 
+        0 0 15px rgba(255, 107, 0, 0.9),
+        0 0 25px rgba(139, 0, 255, 0.5),
+        0 2px 6px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#downtime-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 
+        0 0 20px rgba(255, 107, 0, 1),
+        0 0 35px rgba(139, 0, 255, 0.7),
+        0 3px 8px rgba(0, 0, 0, 0.7);
+}
+
+#downtime-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.2);
+}
+
+/* Thumb para Firefox */
+#downtime-slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffcc66, #ff6b00 60%, #8b0000 100%);
+    cursor: grab;
+    border: 2px solid #fff3d6;
+    box-shadow: 
+        0 0 15px rgba(255, 107, 0, 0.9),
+        0 0 25px rgba(139, 0, 255, 0.5);
+}
+
+#downtime-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* Track Firefox */
+#downtime-slider::-moz-range-track {
+    height: 12px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, 
+        #ff3d00 0%, 
+        #ff6b00 25%, 
+        #ffaa00 50%, 
+        #b347ff 75%, 
+        #6a00ff 100%);
+}
+
+.downtime-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.downtime-reset-btn {
+    background: rgba(20, 0, 35, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 140, 0, 0.35);
+    border-radius: 12px;
+    padding: 10px 24px;
+    color: #f5e6d3;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.downtime-reset-btn:hover {
+    background: rgba(255, 107, 0, 0.4);
+    transform: translateY(-2px);
+    border-color: rgba(255, 165, 0, 0.7);
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
+}
+
+/* Responsive para la sección de tiempo muerto */
+@media (max-width: 768px) {
+    .downtime-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .downtime-value-badge {
+        align-self: stretch;
+        text-align: center;
+    }
+    
+    .downtime-slider-wrapper {
+        gap: 10px;
+    }
+    
+    .downtime-slider-wrapper #downtime-slider {
+        height: 10px;
+    }
+    
+    #downtime-slider::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+    }
+    
+    #downtime-slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+    }
+}

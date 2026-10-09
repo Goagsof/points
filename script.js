@@ -58,12 +58,18 @@ const departmentOperations = {
 // Departamento actual (modeling por defecto)
 let currentDepartment = 'modeling';
 
+// Umbral de calidad (la empresa lo subió a 83%)
+const QUALITY_THRESHOLD = 83;
+
 // Estado de la aplicación - AHORA CON SOPORTE MULTI-DEPARTAMENTO
 let state = {
     // Totales generales (acumulan TODOS los departamentos)
     modelingTotal: 0,    // Total de Modeling (solo operaciones Modeling)
     ptsTotal: 0,         // Total de PTS (solo PTS)
-    grandTotal: 0,       // Total general = modelingTotal + ptsTotal
+    grandTotal: 0,       // Total general = modelingTotal + ptsTotal + downtime
+    
+    // NUEVO: Tiempo muerto (0-8 puntos)
+    downtime: 0,
     
     // Datos de Modeling para calidad
     modelingCases: 0,
@@ -94,6 +100,11 @@ const reworkButton = document.getElementById('rework-btn');
 const printButton = document.getElementById('print-btn');
 const resetButton = document.getElementById('reset-btn');
 const qualityPercentageElement = document.getElementById('quality-percentage');
+
+// NUEVO: Elementos del slider de tiempo muerto
+const downtimeSlider = document.getElementById('downtime-slider');
+const downtimeValueElement = document.getElementById('downtime-value');
+const resetDowntimeBtn = document.getElementById('reset-downtime-btn');
 
 // Elementos de modales
 const codeModal = document.getElementById('code-modal');
@@ -128,7 +139,6 @@ const backgroundImages = [
 
 let currentBackgroundIndex = 0;
 
-// Cargar el índice de fondo guardado
 function loadBackgroundIndex() {
     const savedIndex = localStorage.getItem('backgroundIndex');
     if (savedIndex !== null) {
@@ -140,12 +150,10 @@ function loadBackgroundIndex() {
     applyBackground();
 }
 
-// Guardar el índice de fondo
 function saveBackgroundIndex() {
     localStorage.setItem('backgroundIndex', currentBackgroundIndex.toString());
 }
 
-// Aplicar el fondo actual
 function applyBackground() {
     const imageUrl = `img/${backgroundImages[currentBackgroundIndex]}`;
     document.body.style.backgroundImage = `url('${imageUrl}')`;
@@ -154,7 +162,6 @@ function applyBackground() {
     document.body.style.backgroundAttachment = 'fixed';
     document.body.style.backgroundRepeat = 'no-repeat';
     
-    // Añadir un overlay oscuro para mejorar legibilidad
     if (!document.querySelector('.background-overlay')) {
         const overlay = document.createElement('div');
         overlay.className = 'background-overlay';
@@ -162,7 +169,6 @@ function applyBackground() {
     }
 }
 
-// Cambiar al siguiente fondo
 function nextBackground() {
     currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundImages.length;
     applyBackground();
@@ -170,7 +176,6 @@ function nextBackground() {
     showBackgroundNotification();
 }
 
-// Mostrar notificación del fondo actual
 function showBackgroundNotification() {
     console.log(`🎃 Fondo cambiado a: ${backgroundImages[currentBackgroundIndex]} 👻`);
 }
@@ -180,7 +185,6 @@ function showBackgroundNotification() {
 function switchDepartment(department) {
     currentDepartment = department;
     
-    // Actualizar tabs visualmente
     document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.department === department) {
             btn.classList.add('active');
@@ -189,29 +193,25 @@ function switchDepartment(department) {
         }
     });
     
-    // Actualizar los botones según el departamento
     renderButtons();
 }
 
-// Renderizar botones (CORREGIDO: centrar columna y restaurar títulos)
+// Renderizar botones
 function renderButtons() {
     const dept = departmentOperations[currentDepartment];
     const operationsSection = document.querySelector('.operations-section');
     const operationsColumns = document.querySelectorAll('.operations-column');
     
     if (dept.hasPTS) {
-        // Modeling: mostrar dos columnas
         modelingButtonsContainer.innerHTML = '';
         ptsButtonsContainer.innerHTML = '';
         
-        // Restaurar los títulos originales
         if (operationsColumns.length >= 2) {
             operationsColumns[0].querySelector('h2').textContent = '🎃 Modeling';
             operationsColumns[1].querySelector('h2').textContent = '👻 PTS';
             operationsColumns[1].style.display = 'flex';
         }
         
-        // Quitar la clase que centra la columna
         operationsSection.classList.remove('single-column');
         
         dept.operations.forEach(op => {
@@ -238,22 +238,18 @@ function renderButtons() {
             ptsButtonsContainer.appendChild(button);
         });
     } else {
-        // DI o QC: mostrar solo una columna centrada
         modelingButtonsContainer.innerHTML = '';
         ptsButtonsContainer.innerHTML = '';
         
-        // Cambiar el título de la primera columna
         if (operationsColumns.length >= 1) {
             const deptEmoji = currentDepartment === 'di' ? '🕷️' : '👻';
             operationsColumns[0].querySelector('h2').textContent = `${deptEmoji} ${dept.name}`;
         }
         
-        // Ocultar la segunda columna (PTS)
         if (operationsColumns.length >= 2) {
             operationsColumns[1].style.display = 'none';
         }
         
-        // Agregar clase para centrar la columna
         operationsSection.classList.add('single-column');
         
         const deptEmoji = currentDepartment === 'di' ? '🕷️' : '👻';
@@ -272,7 +268,6 @@ function renderButtons() {
     }
 }
 
-// Mostrar input de código (sin cambios de lógica, solo emoji)
 function showCodeInput() {
     codeModalTitle.textContent = `🎃 Ingresar código para ${currentOperation.description}`;
     codeModal.style.display = 'block';
@@ -280,16 +275,13 @@ function showCodeInput() {
     caseCodeInput.focus();
 }
 
-// Cerrar modal de código
 function closeCodeModal() {
     codeModal.style.display = 'none';
     currentCaseType = null;
     currentOperation = null;
 }
 
-// Omitir código del caso
 function omitCaseCode() {
-    // Generar un código automático único
     let autoCode;
     let counter = 1;
     do {
@@ -297,12 +289,10 @@ function omitCaseCode() {
         counter++;
     } while (state.caseCodes.has(autoCode));
     
-    // Agregar el caso con código automático
     addOperation(currentOperation, autoCode);
     closeCodeModal();
 }
 
-// Confirmar código del caso
 function confirmCaseCode() {
     const code = caseCodeInput.value.trim();
     
@@ -316,12 +306,10 @@ function confirmCaseCode() {
         return;
     }
     
-    // Agregar el caso
     addOperation(currentOperation, code);
     closeCodeModal();
 }
 
-// Mostrar modal de rework (sin cambios de lógica, solo emoji)
 function showReworkModal() {
     if (state.modelingCases === 0) {
         alert("No hay casos de Modeling para marcar como rework.");
@@ -333,13 +321,11 @@ function showReworkModal() {
     reworkCodeInput.focus();
 }
 
-// Cerrar modal de rework
 function closeReworkModal() {
     reworkModal.style.display = 'none';
     reworkCodeInput.value = '';
 }
 
-// Confirmar rework con código
 function confirmRework() {
     const code = reworkCodeInput.value.trim();
     const reworkType = document.querySelector('input[name="rework-type"]:checked').value;
@@ -349,7 +335,6 @@ function confirmRework() {
         return;
     }
     
-    // Verificar si el código existe (si se ingresó un código específico)
     if (code) {
         const caseExists = state.history.some(item => item.code === code && item.type === 'Modeling');
         
@@ -358,33 +343,24 @@ function confirmRework() {
             return;
         }
         
-        // Agregar rework con código y tipo especificado
         addRework(code, reworkType);
     } else {
-        // Si no hay código, usar omitir
         omitReworkCode();
     }
     
     closeReworkModal();
 }
 
-// Omitir código para rework
 function omitReworkCode() {
     const reworkType = document.querySelector('input[name="rework-type"]:checked').value;
-    
-    // Generar un código automático para el rework sin código
     const autoCode = `RW-NOCODE-${state.reworkWithoutCode + 1}`;
     
-    // Agregar rework con código automático
     addRework(autoCode, reworkType);
-    
-    // Incrementar contador de reworks sin código
     state.reworkWithoutCode++;
     
     closeReworkModal();
 }
 
-// Mostrar modal de notas (solo emoji en el título)
 function showNotesModal(caseId) {
     currentNoteCaseId = caseId;
     const caseItem = state.history.find(item => item.id === caseId);
@@ -397,13 +373,11 @@ function showNotesModal(caseId) {
     }
 }
 
-// Cerrar modal de notas
 function closeNotesModal() {
     notesModal.style.display = 'none';
     currentNoteCaseId = null;
 }
 
-// Guardar notas
 function saveNotes() {
     if (currentNoteCaseId) {
         state.caseNotes.set(currentNoteCaseId, notesTextarea.value.trim());
@@ -413,7 +387,7 @@ function saveNotes() {
     closeNotesModal();
 }
 
-// Agregar una operación (MODIFICADO para soportar múltiples departamentos)
+// Agregar una operación
 function addOperation(operation, code) {
     const caseItem = {
         ...operation,
@@ -427,7 +401,6 @@ function addOperation(operation, code) {
     state.history.push(caseItem);
     state.caseCodes.add(code);
     
-    // Acumular en los totales generales
     if (operation.type === "Modeling") {
         state.modelingTotal += operation.points;
         state.modelingCases++;
@@ -435,18 +408,21 @@ function addOperation(operation, code) {
     } else if (operation.type === "PTS") {
         state.ptsTotal += operation.points;
     } else {
-        // DI o QC - suman al total general pero no afectan calidad
-        // Se suman al modelingTotal para que aparezcan en el total general
         state.modelingTotal += operation.points;
     }
     
-    state.grandTotal = state.modelingTotal + state.ptsTotal;
+    updateGrandTotal();
     
     saveState();
     updateUI();
 }
 
-// Agregar un rework (solo cambio cosmético en la descripción)
+// NUEVO: recalcular total general incluyendo tiempo muerto
+function updateGrandTotal() {
+    state.grandTotal = state.modelingTotal + state.ptsTotal + (Number(state.downtime) || 0);
+}
+
+// Agregar un rework
 function addRework(code, reworkType) {
     const isExistingRework = (reworkType === 'repetido');
     
@@ -490,7 +466,7 @@ function addRework(code, reworkType) {
     updateUI();
 }
 
-// Eliminar una operación específica (MODIFICADO para soportar múltiples departamentos)
+// Eliminar una operación específica
 function removeOperation(operationId) {
     const operationIndex = state.history.findIndex(op => op.id === operationId);
     
@@ -530,7 +506,6 @@ function removeOperation(operationId) {
             console.log(`Eliminado rework ${operation.reworkType} del caso: ${operation.code}`);
         }
         
-        // Actualizar totales
         if (operation.type === "Modeling") {
             state.modelingTotal -= operation.points;
             state.modelingCases--;
@@ -541,18 +516,17 @@ function removeOperation(operationId) {
         } else if (operation.type === "PTS") {
             state.ptsTotal -= operation.points;
         } else {
-            // DI o QC
             state.modelingTotal -= operation.points;
         }
         
-        state.grandTotal = state.modelingTotal + state.ptsTotal;
+        updateGrandTotal();
     }
     
     saveState();
     updateUI();
 }
 
-// Calcular calidad (sin cambios)
+// Calcular calidad
 function calculateQuality() {
     const modelingCases = Number(state.modelingCases) || 0;
     const reworkCases = Number(state.reworkCases) || 0;
@@ -565,7 +539,7 @@ function calculateQuality() {
     }
 }
 
-// Deshacer última operación (MODIFICADO)
+// Deshacer última operación
 function undoLastOperation() {
     if (state.history.length === 0) return;
     
@@ -602,7 +576,7 @@ function undoLastOperation() {
             state.modelingTotal -= lastOperation.points;
         }
         
-        state.grandTotal = state.modelingTotal + state.ptsTotal;
+        updateGrandTotal();
     }
     
     if (!(lastOperation.isRework && lastOperation.reworkType === 'repetido') && 
@@ -630,6 +604,7 @@ function resetState() {
         modelingTotal: 0,
         ptsTotal: 0,
         grandTotal: 0,
+        downtime: 0,
         modelingCases: 0,
         reworkCases: 0,
         qualityPercentage: 100,
@@ -661,6 +636,7 @@ function loadState() {
             state.modelingTotal = Number(parsed.modelingTotal) || 0;
             state.ptsTotal = Number(parsed.ptsTotal) || 0;
             state.grandTotal = Number(parsed.grandTotal) || 0;
+            state.downtime = Number(parsed.downtime) || 0;
             state.modelingCases = Number(parsed.modelingCases) || 0;
             state.reworkCases = Number(parsed.reworkCases) || 0;
             state.qualityPercentage = Number(parsed.qualityPercentage) || 100;
@@ -675,7 +651,7 @@ function loadState() {
     }
 }
 
-// Imprimir a PDF (MODIFICADO para mostrar departamento + emojis Halloween)
+// Imprimir a PDF
 function printToPDF() {
     const printContent = `
         <!DOCTYPE html>
@@ -721,14 +697,18 @@ function printToPDF() {
                     <div>👻 Total PTS</div>
                 </div>
                 <div class="summary-item">
+                    <div class="summary-value">${(Number(state.downtime) || 0).toFixed(3)}</div>
+                    <div>💀 Tiempo Muerto</div>
+                </div>
+                <div class="summary-item">
                     <div class="summary-value">${state.grandTotal.toFixed(3)}</div>
                     <div>🕷️ Total General</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-value" style="color: ${state.qualityPercentage >= 80 ? '#27ae60' : '#e74c3c'}">
+                    <div class="summary-value" style="color: ${state.qualityPercentage >= QUALITY_THRESHOLD ? '#27ae60' : '#e74c3c'}">
                         ${state.qualityPercentage.toFixed(2)}%
                     </div>
-                    <div>⚰️ Calidad Modeling</div>
+                    <div>⚰️ Calidad Modeling (min. ${QUALITY_THRESHOLD}%)</div>
                 </div>
             </div>
             
@@ -824,12 +804,23 @@ function generateHistoryHTML() {
     return html;
 }
 
-// Actualizar la interfaz de usuario (solo emojis en strings visibles)
+// Actualizar la interfaz de usuario
 function updateUI() {
     // Actualizar totales
     modelingTotalElement.textContent = state.modelingTotal.toFixed(3);
     ptsTotalElement.textContent = state.ptsTotal.toFixed(3);
+    
+    // Recalcular grand total incluyendo downtime
+    updateGrandTotal();
     grandTotalElement.textContent = state.grandTotal.toFixed(3);
+    
+    // Actualizar slider de tiempo muerto (por si viene de localStorage)
+    if (downtimeSlider) {
+        downtimeSlider.value = state.downtime;
+    }
+    if (downtimeValueElement) {
+        downtimeValueElement.textContent = state.downtime;
+    }
     
     // Actualizar calidad con validación
     const qualityValue = Number(state.qualityPercentage);
@@ -840,8 +831,8 @@ function updateUI() {
         qualityPercentageElement.textContent = `${qualityValue.toFixed(2)}%`;
     }
     
-    // Aplicar color según la calidad
-    if (state.qualityPercentage >= 80) {
+    // Aplicar color según la calidad (NUEVO UMBRAL: 83%)
+    if (state.qualityPercentage >= QUALITY_THRESHOLD) {
         qualityPercentageElement.className = "quality-value good-quality";
     } else {
         qualityPercentageElement.className = "quality-value poor-quality";
@@ -850,13 +841,10 @@ function updateUI() {
     // Actualizar historial
     historyListElement.innerHTML = '';
     
-    // Filtrar historial por departamento actual (mostrar solo casos del departamento seleccionado)
     const filteredHistory = state.history.filter(item => {
         if (currentDepartment === 'modeling') {
-            // En Modeling mostrar Modeling y PTS
             return item.type === 'Modeling' || item.type === 'PTS';
         } else {
-            // En DI o QC mostrar solo sus casos
             return item.department === currentDepartment;
         }
     });
@@ -949,8 +937,43 @@ function updateUI() {
     
     // Deshabilitar botones según el estado
     undoButton.disabled = filteredHistory.length === 0;
-    // Rework solo disponible en Modeling
     reworkButton.disabled = currentDepartment !== 'modeling' || state.modelingCases === 0;
+}
+
+// NUEVO: Manejar cambio del slider de tiempo muerto
+function handleDowntimeChange(event) {
+    const value = Number(event.target.value) || 0;
+    state.downtime = value;
+    
+    if (downtimeValueElement) {
+        downtimeValueElement.textContent = value;
+    }
+    
+    updateGrandTotal();
+    grandTotalElement.textContent = state.grandTotal.toFixed(3);
+    
+    saveState();
+}
+
+// NUEVO: Reiniciar solo el tiempo muerto
+function resetDowntime() {
+    if (state.downtime === 0) return;
+    
+    if (confirm("¿Reiniciar el tiempo muerto a 0?")) {
+        state.downtime = 0;
+        
+        if (downtimeSlider) {
+            downtimeSlider.value = 0;
+        }
+        if (downtimeValueElement) {
+            downtimeValueElement.textContent = 0;
+        }
+        
+        updateGrandTotal();
+        grandTotalElement.textContent = state.grandTotal.toFixed(3);
+        
+        saveState();
+    }
 }
 
 // Inicializar la aplicación
@@ -958,7 +981,6 @@ function init() {
     loadState();
     loadBackgroundIndex();
     
-    // Mostrar la segunda columna (PTS) por defecto
     const operationsColumns = document.querySelectorAll('.operations-column');
     if (operationsColumns.length >= 2) {
         operationsColumns[1].style.display = 'flex';
@@ -967,11 +989,19 @@ function init() {
     renderButtons();
     updateUI();
     
-    // Agregar event listeners
+    // Event listeners principales
     undoButton.addEventListener('click', undoLastOperation);
     reworkButton.addEventListener('click', showReworkModal);
     printButton.addEventListener('click', printToPDF);
     resetButton.addEventListener('click', resetApplication);
+    
+    // NUEVO: Event listeners del slider de tiempo muerto
+    if (downtimeSlider) {
+        downtimeSlider.addEventListener('input', handleDowntimeChange);
+    }
+    if (resetDowntimeBtn) {
+        resetDowntimeBtn.addEventListener('click', resetDowntime);
+    }
     
     // Event listeners para modales
     confirmCodeBtn.addEventListener('click', confirmCaseCode);
@@ -990,13 +1020,11 @@ function init() {
         if (e.target === notesModal) closeNotesModal();
     });
     
-    // Event listener para el botón de cambio de fondo
     const backgroundBtn = document.getElementById('change-background-btn');
     if (backgroundBtn) {
         backgroundBtn.addEventListener('click', nextBackground);
     }
     
-    // Event listeners para los tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             switchDepartment(btn.dataset.department);
@@ -1004,5 +1032,4 @@ function init() {
     });
 }
 
-// Inicializar la aplicación cuando se carga la página
 document.addEventListener('DOMContentLoaded', init);
